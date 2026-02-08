@@ -148,7 +148,8 @@ app.get('*', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
+const FRONTEND_URL = process.env.FRONTEND_URL || `http://localhost:${PORT}`;
 app.listen(PORT, () => {
-  console.log(`\n🚀 EchoSecurity Dashboard Backend is running on http://localhost:${PORT}`);
-  console.log(`📝 Remember to set your Discord OAuth credentials in .env file\n`);
+  console.log(`\n🚀 EchoSecurity Dashboard Backend is running on ${FRONTEND_URL}`);
+  console.log(`📝 Discord OAuth configured for ${FRONTEND_URL}\n`);
 });
