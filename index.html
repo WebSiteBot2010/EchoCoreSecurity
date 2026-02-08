@@ -630,14 +630,14 @@
                                     <div class="numbers">
                                         <p class="text-sm mb-0 text-capitalize font-weight-bold">
                                             Utente</p>
-                                        <h5 class="font-weight-bolder mb-0">
+                                        <h5 class="font-weight-bolder mb-0" id="userDisplay">
                                             Ospite
                                         </h5>
                                     </div>
                                     
                                 </div>
                                 <div class="col-4 text-end">
-                                    <div class="icon icon-shape text-center border-radius-md" style="background-image: url('images/0.png'); background-size: cover; background-position: center;">
+                                    <div class="icon icon-shape text-center border-radius-md" id="userAvatar" style="background-image: url('images/0.png'); background-size: cover; background-position: center;">
                                         
                                     </div>
                                 </div>
@@ -996,10 +996,72 @@
     
     // Load statistics when page loads
     $(document).ready(function() {
+        checkUserAuth();
         loadStatistics();
         // Refresh statistics every 30 seconds
         setInterval(loadStatistics, 30000);
     });
+</script>
+
+<!-- Authentication and User Management -->
+<script>
+    async function checkUserAuth() {
+        try {
+            const response = await fetch('/api/user');
+            const data = await response.json();
+            
+            if (data.authenticated && data.user) {
+                // Utente autenticato
+                document.getElementById('userDisplay').textContent = data.user.username;
+                
+                if (data.user.avatar) {
+                    document.getElementById('userAvatar').style.backgroundImage = `url('${data.user.avatar}')`;
+                }
+                
+                // Aggiungi bottone logout
+                addLogoutButton();
+            } else {
+                // Utente non autenticato
+                document.getElementById('userDisplay').textContent = 'Ospite';
+            }
+        } catch (error) {
+            console.error('Error checking auth:', error);
+        }
+    }
+    
+    function addLogoutButton() {
+        // Controlla se il bottone esiste già
+        if (document.getElementById('logoutBtn')) return;
+        
+        const navbarNav = document.querySelector('.navbar-nav.justify-content-end');
+        if (!navbarNav) return;
+        
+        const logoutItem = document.createElement('li');
+        logoutItem.className = 'nav-item ps-3 d-flex align-items-center';
+        logoutItem.innerHTML = `
+            <a onclick="logout()" style="cursor: pointer;" class="nav-link text-body p-0" id="logoutBtn">
+                <i class="fa fa-sign-out me-sm-1" aria-hidden="true"></i>
+                <span class="d-sm-inline d-none">Logout</span>
+            </a>
+        `;
+        navbarNav.appendChild(logoutItem);
+    }
+    
+    async function logout() {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.ok) {
+                window.location.href = '/?swal=loggedout';
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    }
+
 </script>
 
 <script src="js/chartjs.min.js"></script>
