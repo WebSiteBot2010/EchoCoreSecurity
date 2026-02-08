@@ -27,7 +27,7 @@
 <!-- Page Information -->
 <link rel="icon" type="image/png" href="images/SHARSZf.png">
 <title>
-    S.A.D.I - Dashboard
+    EchoCore - Dashboard
 </title>
 <!-- End of Page Information -->
 
@@ -541,7 +541,7 @@
                             </g>
                         </svg>
                     </div>
-                    <span class="nav-link-text ms-1">S.A.D.I High Staff</span>
+                    <span class="nav-link-text ms-1">EchoSecurity High Staff</span>
                     </a>
                 </li>
                 
@@ -654,13 +654,13 @@
                                     <div class="numbers">
                                         <p class="text-sm mb-0 text-capitalize font-weight-bold">
                                             Servers Goal</p>
-                                        <h5 class="font-weight-bolder mb-0">
-                                            4881 di 4000
+                                        <h5 class="font-weight-bolder mb-0" id="serverCount">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                         </h5>
                                     </div>
                                     
                                         <div class="progress w-150" style="margin-top: 6px;">
-                                            <div style="width: 122.025% !important" aria-label="Progress Bar" class="progress-bar bg-gradient-primary" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div id="serverProgressBar" style="width: 0% !important" aria-label="Progress Bar" class="progress-bar bg-gradient-primary" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                         </div>
                                     
                                 </div>
@@ -682,8 +682,8 @@
                                     <div class="numbers">
                                         <p class="text-sm mb-0 text-capitalize font-weight-bold">
                                             Utenti Protetti</p>
-                                        <h5 class="font-weight-bolder mb-0">
-                                            409542
+                                        <h5 class="font-weight-bolder mb-0" id="protectedUsers">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                         </h5>
                                     </div>
                                     
@@ -706,8 +706,8 @@
                                     <div class="numbers">
                                         <p class="text-sm mb-0 text-capitalize font-weight-bold">
                                             Utenti Segnalati</p>
-                                        <h5 class="font-weight-bolder mb-0">
-                                            2098
+                                        <h5 class="font-weight-bolder mb-0" id="reportedUsers">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                         </h5>
                                     </div>
                                     
@@ -730,9 +730,9 @@
                         <div class="row">
                             <div class="col-lg-6">
                                 <div class="d-flex flex-column h-100">
-                                    <p class="mb-1 pt-2 text-bold">S.A.D.I</p>
-                                    <h5 class="font-weight-bolder">Dashboard - S.A.D.I</h5>
-                                    <p>Benvenuti nella nuovissima Dashboard di S.A.D.I per la v2. Questa dashboard è stata pensata per rendere le varie configurazioni più intuitive e semplici, in modo tale da semplificare il tutto!</p>
+                                    <p class="mb-1 pt-2 text-bold">EchoSecurity</p>
+                                    <h5 class="font-weight-bolder">Dashboard - EchoSecurity</h5>
+                                    <p>Benvenuti nella nuovissima Dashboard di EchoSecurity per la v2. Questa dashboard è stata pensata per rendere le varie configurazioni più intuitive e semplici, in modo tale da semplificare il tutto!</p>
                                     <p class="mb-5"></p>
                                     
                                 </div>
@@ -761,7 +761,7 @@
                 <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center gray-icon-bg" style="margin: auto 0px; width: 30px !important; height: 30px !important;">
                     <i class="fas fa-bomb invert-img" style="font-size: 80%; color: black;"></i>
                 </div>
-                <span style="margin: auto 0px">Stiamo attivamente lavorando allo sviluppo delle nuove funzionalità. L'aggiornamento è previsto entro la fine del 2025.</span>
+                <span style="margin: auto 0px">Stiamo attivamente lavorando allo sviluppo delle nuove funzionalità. L'aggiornamento è previsto entro la fine del 2026.</span>
                 <span class="tagnamecolor-date" style="color:rgb(155, 148, 148); margin: auto 0px; font-size: 75%; flex: 1; text-align: right; white-space: nowrap;">
             146 Giorni fa
           </span>
@@ -953,6 +953,55 @@
 
     
 </script>
+
+<!-- Fetch Statistics from Backend -->
+<script>
+    async function loadStatistics() {
+        try {
+            // Fetch data from your backend API endpoint
+            const response = await fetch('/api/stats');
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch statistics');
+            }
+            
+            const data = await response.json();
+            
+            // Update Server Goal
+            const serverCount = data.serverCount || 0;
+            const goalServers = 100;
+            const serverProgressPercent = Math.min((serverCount / goalServers) * 100, 100);
+            
+            document.getElementById('serverCount').textContent = `${serverCount} di ${goalServers}`;
+            document.getElementById('serverProgressBar').style.width = `${serverProgressPercent}%`;
+            document.getElementById('serverProgressBar').setAttribute('aria-valuenow', Math.floor(serverProgressPercent));
+            
+            // Update Protected Users
+            const protectedUsers = data.totalUsers || 0;
+            document.getElementById('protectedUsers').textContent = protectedUsers.toLocaleString('it-IT');
+            
+            // Update Reported Users
+            const reportedUsers = data.reportedUsers || 0;
+            document.getElementById('reportedUsers').textContent = reportedUsers.toLocaleString('it-IT');
+            
+        } catch (error) {
+            console.error('Error loading statistics:', error);
+            
+            // Fallback values if API fails
+            document.getElementById('serverCount').textContent = '0 di 100';
+            document.getElementById('protectedUsers').textContent = '0';
+            document.getElementById('reportedUsers').textContent = '0';
+        }
+    }
+    
+    // Load statistics when page loads
+    $(document).ready(function() {
+        loadStatistics();
+        // Refresh statistics every 30 seconds
+        setInterval(loadStatistics, 30000);
+    });
+</script>
+
 <script src="js/chartjs.min.js"></script>
 <script src="js/sweetalert.js"></script>
 <script src="js/themeselect.js"></script>
